@@ -311,6 +311,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+if (typeof window !== 'undefined' && window.electronAPI && typeof window.electronAPI.onClearData === 'function') {
+    window.electronAPI.onClearData(() => {
+        // call the existing clearData function
+        try {
+            clearData();
+        } catch (err) {
+            console.error('clearData listener error:', err);
+        }
+    });
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.toggleSettings = toggleSettings;

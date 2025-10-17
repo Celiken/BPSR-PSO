@@ -12,6 +12,7 @@ export function registerShortcuts() {
     registerResize();
     registerMove();
     registerMinimize();
+    registerClear();
 }
 
 /**
@@ -81,5 +82,17 @@ function registerMove() {
 function registerMinimize() {
     globalShortcut.register('Control+Alt+Z', () => {
         window.minimizeOrRestore();
+    });
+}
+
+// Registers the shortcut for clearing data.
+function registerClear() {
+    globalShortcut.register('Control+Num1', () => {
+        try {
+            const bw = window.getWindow(); // Window manager provides the BrowserWindow
+            if (bw && bw.webContents) bw.webContents.send('clear-data');
+        } catch (err) {
+            console.error('Failed to send clear-data to renderer:', err);
+        }
     });
 }
