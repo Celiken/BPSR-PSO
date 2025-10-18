@@ -175,6 +175,39 @@ class Window {
         }
     }
 
+    minimizeToTaskbar() {
+        try {
+            const bw = this.getWindow();
+            bw.minimize();
+        } catch (err) {
+            console.error('minimizeToTaskbar failed:', err);
+        }
+    }
+
+    restoreFromTaskbar() {
+        try {
+            const bw = this.getWindow();
+            if (bw.isMinimized()) bw.restore();
+            // ensure it's visible and focused after restore
+            if (!bw.isVisible()) bw.show();
+        } catch (err) {
+            console.error('restoreFromTaskbar failed:', err);
+        }
+    }
+
+    toggleMinimizeToTaskbar() {
+        try {
+            const bw = this.getWindow();
+            if (bw.isMinimized()) {
+                this.restoreFromTaskbar();
+            } else {
+                this.minimizeToTaskbar();
+            }
+        } catch (err) {
+            console.error('toggleMinimizeToTaskbar failed:', err);
+        }
+    }
+
     loadURL(url) {
         this._window.loadURL(url);
     }

@@ -14,6 +14,7 @@ export function registerShortcuts() {
     registerMinimize();
     registerClear();
     registerPauseToggle();
+    registerMinimizeToTaskbar();
 }
 
 /**
@@ -83,6 +84,12 @@ function registerMove() {
 function registerMinimize() {
     globalShortcut.register('Control+Alt+Z', () => {
         window.minimizeOrRestore();
+    });
+}
+
+function registerMinimizeToTaskbar() {
+    globalShortcut.register('Control+Alt+P', () => {
+        window.toggleMinimizeToTaskbar();
     });
 }
 
