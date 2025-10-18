@@ -1,14 +1,24 @@
 const colorHues = [
-    210, // Blue
-    30, // Orange
-    270, // Purple
-    150, // Teal
-    330, // Magenta
-    60, // Yellow
-    180, // Cyan
-    0, // Red
-    240, // Indigo
+    0, // stormblade
+    30, // shield_knight
+    60, // marksman
+    90, // verdant_oracle
+    150, // wind_knight
+    230, // heavy_guardian
+    270, // soul_musician
+    330, // frost_mage
 ];
+
+const classColorHues = {
+    stormblade: 0,
+    shield_knight: 30,
+    marksman: 60,
+    verdant_oracle: 90,
+    wind_knight: 150,
+    heavy_guardian: 230,
+    soul_musician: 270,
+    frost_mage: 330,
+};
 
 let colorIndex = 0;
 
@@ -21,6 +31,35 @@ function getNextColorShades() {
 
     const dpsColor = `hsl(${h}, ${s}%, ${l_dps}%)`;
     const hpsColor = `hsl(${h}, ${s}%, ${l_hps}%)`;
+    return { dps: dpsColor, hps: hpsColor };
+}
+
+function getClassColorShades(profession) {
+    // accept either index or class-name string
+    let h;
+    if (typeof profession === 'string') {
+        const key = profession.toLowerCase();
+        h = classColorHues[key];
+    } else if (typeof profession === 'number') {
+        h = colorHues[profession];
+    }
+
+    if (h === undefined) {
+        return getDefaultColor();
+    }
+
+    const s = 90;
+    const l_dps = 30;
+    const l_hps = 20;
+
+    const dpsColor = `hsl(${h}, ${s}%, ${l_dps}%)`;
+    const hpsColor = `hsl(${h}, ${s}%, ${l_hps}%)`;
+    return { dps: dpsColor, hps: hpsColor };
+}
+
+function getDefaultColor() {
+    const dpsColor = `hsl(${0}, ${0}%, ${30}%)`;
+    const hpsColor = `hsl(${0}, ${0}%, ${20}%)`;
     return { dps: dpsColor, hps: hpsColor };
 }
 
@@ -64,9 +103,9 @@ function renderDataList(users) {
 
     users.forEach((user, index) => {
         if (!userColors[user.id]) {
-            userColors[user.id] = getNextColorShades();
+            userColors[user.id] = getDefaultColor();
         }
-        const colors = userColors[user.id];
+        let colors = userColors[user.id];
         const item = document.createElement('li');
 
         item.className = 'data-item';
@@ -79,7 +118,10 @@ function renderDataList(users) {
         const professionString = user.profession ? user.profession.trim() : '';
         if (professionString) {
             const mainProfession = professionString.split('(')[0].trim();
-            const iconFileName = mainProfession.toLowerCase().replace(/ /g, '_') + '.png';
+            const className = mainProfession.toLowerCase().replace(/ /g, '_');
+            const iconFileName = className + '.png';
+            userColors[user.id] = getClassColorShades(className);
+            colors = userColors[user.id];
             classIconHtml = `<img src="assets/${iconFileName}" class="class-icon" alt="${mainProfession}" onerror="this.style.display='none'">`;
         }
 
