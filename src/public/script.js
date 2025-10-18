@@ -322,6 +322,17 @@ if (typeof window !== 'undefined' && window.electronAPI && typeof window.electro
     });
 }
 
+if (typeof window !== 'undefined' && window.electronAPI && typeof window.electronAPI.onTogglePause === 'function') {
+    window.electronAPI.onTogglePause(() => {
+        // call the existing togglePause function
+        try {
+            togglePause();
+        } catch (err) {
+            console.error('togglePause listener error:', err);
+        }
+    });
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.toggleSettings = toggleSettings;

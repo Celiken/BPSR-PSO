@@ -13,6 +13,7 @@ export function registerShortcuts() {
     registerMove();
     registerMinimize();
     registerClear();
+    registerPauseToggle();
 }
 
 /**
@@ -93,6 +94,18 @@ function registerClear() {
             if (bw && bw.webContents) bw.webContents.send('clear-data');
         } catch (err) {
             console.error('Failed to send clear-data to renderer:', err);
+        }
+    });
+}
+
+// Registers the shortcut for clearing data.
+function registerPauseToggle() {
+    globalShortcut.register('Control+Num2', () => {
+        try {
+            const bw = window.getWindow(); // Window manager provides the BrowserWindow
+            if (bw && bw.webContents) bw.webContents.send('toggle-pause');
+        } catch (err) {
+            console.error('Failed to send toggle-pause to renderer:', err);
         }
     });
 }
