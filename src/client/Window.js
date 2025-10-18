@@ -187,9 +187,32 @@ class Window {
     restoreFromTaskbar() {
         try {
             const bw = this.getWindow();
+
             if (bw.isMinimized()) bw.restore();
-            // ensure it's visible and focused after restore
-            if (!bw.isVisible()) bw.show();
+
+            const restoreWithoutFocus = () => {
+                try {
+                    if (typeof bw.setFocusable === 'function') bw.setFocusable(false);
+                    if (typeof bw.showInactive === 'function') {
+                        bw.showInactive();
+                    } else {
+                        bw.show();
+                    }
+                } catch (err) {
+                    console.error('restoreWithoutFocus failed:', err);
+                    try {
+                        bw.show();
+                    } catch (e) {}
+                } finally {
+                    setTimeout(() => {
+                        try {
+                            if (typeof bw.setFocusable === 'function') bw.setFocusable(true);
+                        } catch (e) {}
+                    }, 250);
+                }
+            };
+
+            restoreWithoutFocus();
         } catch (err) {
             console.error('restoreFromTaskbar failed:', err);
         }
