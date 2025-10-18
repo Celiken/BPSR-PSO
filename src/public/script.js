@@ -82,6 +82,7 @@ let isPaused = false;
 let socket = null;
 let isWebSocketConnected = false;
 let lastWebSocketMessage = Date.now();
+let sortMode = 'total_damage';
 const WEBSOCKET_RECONNECT_INTERVAL = 5000;
 
 const SERVER_URL = 'localhost:8990';
@@ -93,13 +94,30 @@ function formatNumber(num) {
     return Math.round(num).toString();
 }
 
+function setSortMode(mode) {
+    if (mode !== 'total_damage' && mode !== 'total_dps') return;
+    sortMode = mode;
+    // If data already present, re-render with new sort
+    updateAll();
+}
+
+/** Toggle between the two sort modes */
+function toggleSortMode() {
+    setSortMode(sortMode === 'total_damage' ? 'total_dps' : 'total_damage');
+}
+
 function renderDataList(users) {
     columnsContainer.innerHTML = '';
 
     const totalDamageOverall = users.reduce((sum, user) => sum + user.total_damage.total, 0);
     const totalHealingOverall = users.reduce((sum, user) => sum + user.total_healing.total, 0);
 
-    users.sort((a, b) => b.total_dps - a.total_dps);
+    // Sort based on selected mode
+    if (sortMode === 'total_dps') {
+        users.sort((a, b) => (b.total_dps || 0) - (a.total_dps || 0));
+    } else {
+        users.sort((a, b) => (b.total_damage?.total || 0) - (a.total_damage?.total || 0));
+    }
 
     users.forEach((user, index) => {
         if (!userColors[user.id]) {
@@ -333,6 +351,22 @@ document.addEventListener('DOMContentLoaded', () => {
     opacitySlider.addEventListener('input', (event) => {
         setBackgroundOpacity(event.target.value);
     });
+
+    const sortSelect = document.getElementById('sortModeSelect');
+    if (sortSelect) {
+        // initialize select to current sortMode if available
+        if (typeof sortMode !== 'undefined') sortSelect.value = sortMode;
+        sortSelect.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            if (typeof setSortMode === 'function') {
+                setSortMode(mode);
+            } else {
+                // fallback: set global variable and refresh view
+                sortMode = mode;
+                updateAll();
+            }
+        });
+    }
 
     // Listen for the passthrough toggle event from the main process
     window.electronAPI.onTogglePassthrough((isIgnoring) => {
