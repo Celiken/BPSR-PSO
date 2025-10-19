@@ -6,7 +6,7 @@ const colorHues = [
     150, // wind_knight
     230, // heavy_guardian
     270, // soul_musician
-    330, // frost_mage
+    300, // frost_mage
 ];
 
 const classColorHues = {
@@ -17,7 +17,7 @@ const classColorHues = {
     wind_knight: 150,
     heavy_guardian: 230,
     soul_musician: 270,
-    frost_mage: 330,
+    frost_mage: 300,
 };
 
 let colorIndex = 0;
@@ -25,9 +25,9 @@ let colorIndex = 0;
 function getNextColorShades() {
     const h = colorHues[colorIndex];
     colorIndex = (colorIndex + 1) % colorHues.length;
-    const s = 90;
-    const l_dps = 30;
-    const l_hps = 20;
+    const s = 100;
+    const l_dps = 50;
+    const l_hps = 30;
 
     const dpsColor = `hsl(${h}, ${s}%, ${l_dps}%)`;
     const hpsColor = `hsl(${h}, ${s}%, ${l_hps}%)`;
