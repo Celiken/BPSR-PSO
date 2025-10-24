@@ -68,7 +68,7 @@ export class PacketInterceptor {
             };
 
             const fragmentIpCache = new Map();
-            const FRAGMENT_TIMEOUT = 30000;
+            const FRAGMENT_TIMEOUT = 90000;
             const getTCPPacket = (frameBuffer, ethOffset) => {
                 const ipPacket = decoders.IPV4(frameBuffer, ethOffset);
                 const ipId = ipPacket.info.id;
