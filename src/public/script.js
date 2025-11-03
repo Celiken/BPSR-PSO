@@ -94,18 +94,6 @@ function formatNumber(num) {
     return Math.round(num).toString();
 }
 
-function setSortMode(mode) {
-    if (mode !== 'total_damage' && mode !== 'total_dps') return;
-    sortMode = mode;
-    // If data already present, re-render with new sort
-    updateAll();
-}
-
-/** Toggle between the two sort modes */
-function toggleSortMode() {
-    setSortMode(sortMode === 'total_damage' ? 'total_dps' : 'total_damage');
-}
-
 function renderDataList(users) {
     columnsContainer.innerHTML = '';
 
@@ -113,11 +101,14 @@ function renderDataList(users) {
     const totalHealingOverall = users.reduce((sum, user) => sum + user.total_healing.total, 0);
 
     // Sort based on selected mode
-    if (sortMode === 'total_dps') {
-        users.sort((a, b) => (b.total_dps || 0) - (a.total_dps || 0));
+    if (sortMode === 'damage') {
+        users.sort((a, b) => (b.total_healing?.total || 0) - (a.total_healing?.total || 0));
     } else {
         users.sort((a, b) => (b.total_damage?.total || 0) - (a.total_damage?.total || 0));
     }
+
+    const topDamage = users[0].total_damage.total;
+    const topHeal = users.length > 0 ? Math.max(...users.map((user) => user.total_healing?.total || 0)) : 0;
 
     users.forEach((user, index) => {
         if (!userColors[user.id]) {
@@ -129,6 +120,9 @@ function renderDataList(users) {
         item.className = 'data-item';
         const damagePercent = totalDamageOverall > 0 ? (user.total_damage.total / totalDamageOverall) * 100 : 0;
         const healingPercent = totalHealingOverall > 0 ? (user.total_healing.total / totalHealingOverall) * 100 : 0;
+
+        const damagePercentToTop = topDamage > 0 ? (user.total_damage.total / topDamage) * 100 : 0;
+        const healingPercentToTop = topHeal > 0 ? (user.total_healing.total / topHeal) * 100 : 0;
 
         const displayName = user.fightPoint ? `${user.name} (${user.fightPoint})` : user.name;
 
@@ -147,7 +141,7 @@ function renderDataList(users) {
         if (user.total_healing.total > 0 || user.total_hps > 0) {
             subBarHtml = `
                 <div class="sub-bar">
-                    <div class="hps-bar-fill" style="width: ${healingPercent}%; background-color: ${colors.hps};"></div>
+                    <div class="hps-bar-fill" style="width: ${healingPercentToTop}%; background-color: ${colors.hps};"></div>
                     <div class="hps-stats">
                        ${formatNumber(user.total_healing.total)} (${formatNumber(user.total_hps)} HPS, ${healingPercent.toFixed(1)}%)
                     </div>
@@ -157,7 +151,7 @@ function renderDataList(users) {
 
         item.innerHTML = `
             <div class="main-bar">
-                <div class="dps-bar-fill" style="width: ${damagePercent}%; background-color: ${colors.dps};"></div>
+                <div class="dps-bar-fill" style="width: ${damagePercentToTop}%; background-color: ${colors.dps};"></div>
                 <div class="content">
                     <span class="rank">${index + 1}.</span>
                     ${classIconHtml}
@@ -309,6 +303,18 @@ function checkConnection() {
     }
 }
 
+function sortDamage() {
+    sortMode = 'damage';
+    // If data already present, re-render with new sort
+    updateAll();
+}
+
+function sortHealing() {
+    sortMode = 'heal';
+    // If data already present, re-render with new sort
+    updateAll();
+}
+
 function initialize() {
     connectWebSocket();
     setInterval(checkConnection, WEBSOCKET_RECONNECT_INTERVAL);
@@ -352,22 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setBackgroundOpacity(event.target.value);
     });
 
-    const sortSelect = document.getElementById('sortModeSelect');
-    if (sortSelect) {
-        // initialize select to current sortMode if available
-        if (typeof sortMode !== 'undefined') sortSelect.value = sortMode;
-        sortSelect.addEventListener('change', (e) => {
-            const mode = e.target.value;
-            if (typeof setSortMode === 'function') {
-                setSortMode(mode);
-            } else {
-                // fallback: set global variable and refresh view
-                sortMode = mode;
-                updateAll();
-            }
-        });
-    }
-
     // Listen for the passthrough toggle event from the main process
     window.electronAPI.onTogglePassthrough((isIgnoring) => {
         if (isIgnoring) {
@@ -409,8 +399,32 @@ if (typeof window !== 'undefined' && window.electronAPI && typeof window.electro
     });
 }
 
+if (typeof window !== 'undefined' && window.electronAPI && typeof window.electronAPI.onSortHealing === 'function') {
+    window.electronAPI.onSortHealing(() => {
+        // call the existing togglePause function
+        try {
+            sortDamage();
+        } catch (err) {
+            console.error('togglePause listener error:', err);
+        }
+    });
+}
+
+if (typeof window !== 'undefined' && window.electronAPI && typeof window.electronAPI.onSortDamage === 'function') {
+    window.electronAPI.onSortDamage(() => {
+        // call the existing togglePause function
+        try {
+            sortHealing();
+        } catch (err) {
+            console.error('togglePause listener error:', err);
+        }
+    });
+}
+
 window.clearData = clearData;
 window.togglePause = togglePause;
 window.toggleSettings = toggleSettings;
 window.closeClient = closeClient;
 window.toggleHelp = toggleHelp;
+window.sortDamage = sortDamage;
+window.sortHealing = sortHealing;

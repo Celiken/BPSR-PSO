@@ -15,6 +15,8 @@ export function registerShortcuts() {
     registerClear();
     registerPauseToggle();
     registerMinimizeToTaskbar();
+    registerSortByDamage();
+    registerSortByHealing();
 }
 
 /**
@@ -113,6 +115,28 @@ function registerPauseToggle() {
             if (bw && bw.webContents) bw.webContents.send('toggle-pause');
         } catch (err) {
             console.error('Failed to send toggle-pause to renderer:', err);
+        }
+    });
+}
+
+function registerSortByDamage() {
+    globalShortcut.register('Control+Num7', () => {
+        try {
+            const bw = window.getWindow(); // Window manager provides the BrowserWindow
+            if (bw && bw.webContents) bw.webContents.send('sort-damage');
+        } catch (err) {
+            console.error('Failed to send sort-damage to renderer:', err);
+        }
+    });
+}
+
+function registerSortByHealing() {
+    globalShortcut.register('Control+Num8', () => {
+        try {
+            const bw = window.getWindow(); // Window manager provides the BrowserWindow
+            if (bw && bw.webContents) bw.webContents.send('sort-healing');
+        } catch (err) {
+            console.error('Failed to send sort-healing to renderer:', err);
         }
     });
 }
